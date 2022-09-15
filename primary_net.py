@@ -6,6 +6,7 @@ from torch.nn.parameter import Parameter
 from hypernetwork_modules import HyperNetwork
 from resnet_blocks import ResNetBlock
 
+from prettytable import PrettyTable
 
 class Embedding(nn.Module):
 
@@ -79,8 +80,24 @@ class PrimaryNetwork(nn.Module):
 
         return x
 
+def count_parameters(model):
+    table = PrettyTable(["Modules", "Parameters"])
+    total_params = 0
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad: continue
+        params = parameter.numel()
+        table.add_row([name, params])
+        total_params+=params
+    print(table)
+    print(f"Total Trainable Params: {total_params}")
+    return total_params
+
 if __name__ == "__main__":
     net = PrimaryNetwork()
-    # print(net)
-    net.cuda()
-    net(torch.randn(4, 3, 32, 32).cuda())
+    pytorch_total_params = sum(p.numel() for p in net.parameters() if p.requires_grad)
+    
+    # Hypernetworks Resnet-18 Parameters Len = 97,882
+    # Resnet-18 Parameters Len = 11,511,784
+    # print(pytorch_total_params)
+
+    count_parameters(net)
